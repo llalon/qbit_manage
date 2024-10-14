@@ -11,6 +11,8 @@ from datetime import datetime
 from datetime import timedelta
 from functools import lru_cache
 
+from modules.core.remove_stalled import RemoveStalled
+
 try:
     import schedule
     from croniter import croniter
@@ -141,6 +143,14 @@ parser.add_argument(
     action="store_true",
     default=False,
     help="Use this if you would like to remove unregistered torrents.",
+)
+parser.add_argument(
+    "-rs",
+    "--rem-stalled",
+    dest="rem_stalled",
+    action="store_true",
+    default=False,
+    help="Use this if you would like to remove or pause stalled torrents.",
 )
 parser.add_argument(
     "-tnhl",
@@ -453,6 +463,7 @@ def start():
         "untagged_noHL": 0,
         "updated_share_limits": 0,
         "cleaned_share_limits": 0,
+        "stalled_actioned": 0
     }
 
     def finished_run():
@@ -539,6 +550,10 @@ def start():
         if cfg.commands["rem_orphaned"]:
             stats["orphaned"] += RemoveOrphaned(qbit_manager).stats
 
+        # Action Stalled Torrents
+        if cfg.commands["rem_stalled"]:
+            stats["stalled_actioned"] += RemoveStalled(qbit_manager).stats
+
         # Empty RecycleBin
         stats["recycle_emptied"] += cfg.cleanup_dirs("Recycle Bin")
 
@@ -567,6 +582,8 @@ def start():
         stats_summary.append(f"Total Torrents + Contents Deleted : {stats['deleted_contents']}")
     if stats["orphaned"] > 0:
         stats_summary.append(f"Total Orphaned Files: {stats['orphaned']}")
+    if stats["stalled_actioned"] > 0:
+        stats_summary.append(f"Total Stalled Torrents Actioned: {stats['stalled_actioned']}")
     if stats["tagged_noHL"] > 0:
         stats_summary.append(f"Total {cfg.nohardlinks_tag} Torrents Tagged: {stats['tagged_noHL']}")
     if stats["untagged_noHL"] > 0:

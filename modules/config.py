@@ -29,11 +29,12 @@ COMMANDS = [
     "rem_unregistered",
     "tag_tracker_error",
     "rem_orphaned",
+    "rem_stalled",
     "tag_nohardlinks",
     "share_limits",
     "skip_cleanup",
     "skip_qb_version_check",
-    "dry_run",
+    "dry_run"
 ]
 
 
@@ -98,6 +99,7 @@ class Config:
                 logger.debug(f"    --rem-unregistered (QBT_REM_UNREGISTERED): {self.commands['rem_unregistered']}")
                 logger.debug(f"    --tag-tracker-error (QBT_TAG_TRACKER_ERROR): {self.commands['tag_tracker_error']}")
                 logger.debug(f"    --rem-orphaned (QBT_REM_ORPHANED): {self.commands['rem_orphaned']}")
+                logger.debug(f"    --rem-stalled (QBT_REM_STALLED): {self.commands['rem_stalled']}")
                 logger.debug(f"    --tag-nohardlinks (QBT_TAG_NOHARDLINKS): {self.commands['tag_nohardlinks']}")
                 logger.debug(f"    --share-limits (QBT_SHARE_LIMITS): {self.commands['share_limits']}")
                 logger.debug(f"    --skip-cleanup (QBT_SKIP_CLEANUP): {self.commands['skip_cleanup']}")
@@ -126,6 +128,7 @@ class Config:
             logger.debug(f"    --rem-unregistered (QBT_REM_UNREGISTERED): {args['rem_unregistered']}")
             logger.debug(f"    --tag-tracker-error (QBT_TAG_TRACKER_ERROR): {args['tag_tracker_error']}")
             logger.debug(f"    --rem-orphaned (QBT_REM_ORPHANED): {args['rem_orphaned']}")
+            logger.debug(f"    --rem-stalled (QBT_REM_STALLED): {args['rem_staled']}")
             logger.debug(f"    --tag-nohardlinks (QBT_TAG_NOHARDLINKS): {args['tag_nohardlinks']}")
             logger.debug(f"    --share-limits (QBT_SHARE_LIMITS): {args['share_limits']}")
             logger.debug(f"    --skip-cleanup (QBT_SKIP_CLEANUP): {args['skip_cleanup']}")
@@ -156,6 +159,8 @@ class Config:
             self.data["recyclebin"] = self.data.pop("recyclebin")
         if "orphaned" in self.data:
             self.data["orphaned"] = self.data.pop("orphaned")
+        if "stalled" in self.data:
+            self.data["stalled"] = self.data.pop("stalled")
         if "apprise" in self.data:
             self.data["apprise"] = self.data.pop("apprise")
         if "notifiarr" in self.data:
@@ -181,6 +186,7 @@ class Config:
                 hooks("tag_update")
                 hooks("rem_unregistered")
                 hooks("rem_orphaned")
+                hooks("rem_stalled")
                 hooks("tag_nohardlinks")
                 hooks("cleanup_dirs")
                 self.data["webhooks"] = temp
@@ -269,6 +275,7 @@ class Config:
             "rem_unregistered": None,
             "tag_tracker_error": None,
             "rem_orphaned": None,
+            "rem_stalled": None,
             "tag_nohardlinks": None,
             "share_limits": None,
             "cleanup_dirs": None,
@@ -719,6 +726,31 @@ class Config:
             e = "Config Error: directory attribute not found"
             self.notify(e, "Config")
             raise Failed(e)
+
+        # Add Stalled
+        self.stalled = {}
+        self.stalled["action_after_x_days"] = self.util.check_for_attribute(
+            self.data, "action_after_x_days", parent="stalled", var_type="int", default_is_none=True
+        )
+        self.stalled["exclude_patterns"] = self.util.check_for_attribute(
+            self.data, "exclude_patterns", parent="stalled", var_type="list", default_is_none=True, do_print=False
+        )
+        self.stalled["min_threshold"] = self.util.check_for_attribute(
+            self.data,
+            "min_threshold",
+            parent="stalled",
+            var_type="int",
+            default=95,
+            min_int=-1,
+        )
+        self.stalled["min_data_points"] = self.util.check_for_attribute(
+            self.data,
+            "min_data_points",
+            parent="stalled",
+            var_type="int",
+            default=100,
+            min_int=-1,
+        )
 
         # Add Orphaned
         self.orphaned = {}
