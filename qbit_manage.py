@@ -463,7 +463,7 @@ def start():
         "untagged_noHL": 0,
         "updated_share_limits": 0,
         "cleaned_share_limits": 0,
-        "stalled_actioned": 0
+        "stalled_actioned": 0,
     }
 
     def finished_run():

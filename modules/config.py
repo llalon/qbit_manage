@@ -34,7 +34,7 @@ COMMANDS = [
     "share_limits",
     "skip_cleanup",
     "skip_qb_version_check",
-    "dry_run"
+    "dry_run",
 ]
 
 
@@ -750,6 +750,15 @@ class Config:
             var_type="int",
             default=100,
             min_int=-1,
+        )
+        self.stalled["categories"] = self.util.check_for_attribute(
+            self.data,
+            "categories",
+            parent="stalled",
+            var_type="list",
+            default_is_none=True,
+            do_print=False,
+            save=False,
         )
 
         # Add Orphaned

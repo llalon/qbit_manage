@@ -1,7 +1,7 @@
 import os
+import sqlite3
 import time
 from concurrent.futures import ThreadPoolExecutor
-import sqlite3
 
 from modules import util
 
@@ -22,6 +22,7 @@ class RemoveStalled:
 
         self.executor = ThreadPoolExecutor(max_workers=max(os.cpu_count() - 1, 1))
         self.collect_torrent_info()
+        self.action_stalled()
         self.executor.shutdown()
 
         self.close_database()
@@ -54,6 +55,9 @@ class RemoveStalled:
             except sqlite3.Error as e:
                 self.logger.error(f"SQLite connection error during close: {e}")
 
+    def action_stalled(self):
+        pass
+
     def collect_torrent_info(self):
         """Collect current torrent info with timestamp"""
 
@@ -64,7 +68,7 @@ class RemoveStalled:
         self.logger.print_line(f"Saving info for {len(torrents)} torrents", self.config.loglevel)
 
         insert_query = """
-        INSERT INTO stalled_torrents (torrent_id, timestamp, state) 
+        INSERT INTO stalled_torrents (torrent_id, timestamp, state)
         VALUES (?, ?, ?)
         """
 
